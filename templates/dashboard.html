@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – TaskFlow</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+
+<!-- ── Top Nav ── -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <span class="brand-icon">✓</span> TaskFlow
+  </div>
+  <div class="nav-right">
+    <span class="nav-user">👤 {{ username }}</span>
+    <span id="ws-badge" class="ws-badge offline" title="WebSocket status">● Live</span>
+    <button id="logout-btn" class="btn-ghost">Logout</button>
+  </div>
+</nav>
+
+<!-- ── Notification toast ── -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- ── Main Layout ── -->
+<main class="main-container">
+
+  <!-- ── Analytics ── -->
+  <section class="analytics-section">
+    <h2 class="section-title">Overview</h2>
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-value" id="stat-total">–</div>
+        <div class="stat-label">Total Tasks</div>
+      </div>
+      <div class="stat-card completed">
+        <div class="stat-value" id="stat-completed">–</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-value" id="stat-pending">–</div>
+        <div class="stat-label">Pending</div>
+      </div>
+      <div class="stat-card progress">
+        <div class="stat-value" id="stat-inprogress">–</div>
+        <div class="stat-label">In Progress</div>
+      </div>
+      <div class="stat-card pct">
+        <div class="stat-value" id="stat-pct">–%</div>
+        <div class="stat-label">Completion</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Priority breakdown -->
+    <div class="priority-bars">
+      <h3>By Priority</h3>
+      <div class="pb-row"><span>High</span>   <div class="pb-track"><div class="pb-fill high"   id="pb-high"></div></div><span id="pb-high-n">0</span></div>
+      <div class="pb-row"><span>Medium</span> <div class="pb-track"><div class="pb-fill medium" id="pb-medium"></div></div><span id="pb-medium-n">0</span></div>
+      <div class="pb-row"><span>Low</span>    <div class="pb-track"><div class="pb-fill low"    id="pb-low"></div></div><span id="pb-low-n">0</span></div>
+    </div>
+  </section>
+
+  <!-- ── Task Panel ── -->
+  <section class="tasks-section">
+
+    <!-- Add Task Form -->
+    <div class="add-task-card">
+      <h2 class="section-title">Add New Task</h2>
+      <div class="form-row">
+        <input id="task-title" type="text" placeholder="Task title *" class="input-text" />
+      </div>
+      <div class="form-row">
+        <textarea id="task-desc" placeholder="Description (optional)" class="input-textarea" rows="2"></textarea>
+      </div>
+      <div class="form-row two-col">
+        <div class="field">
+          <label>Priority</label>
+          <select id="task-priority" class="input-select">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="task-status" class="input-select">
+            <option value="pending" selected>Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+      </div>
+      <button id="add-task-btn" class="btn-primary">+ Add Task</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <select id="filter-status" class="input-select slim">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+      </select>
+      <select id="filter-priority" class="input-select slim">
+        <option value="">All Priority</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+    </div>
+
+    <!-- Task List -->
+    <div id="task-list" class="task-list">
+      <p class="empty-msg">Loading tasks…</p>
+    </div>
+  </section>
+</main>
+
+<!-- ── Edit Modal ── -->
+<div id="edit-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h3>Edit Task</h3>
+    <input id="edit-title"    type="text"  class="input-text"     placeholder="Title" />
+    <textarea id="edit-desc"  class="input-textarea" rows="3" placeholder="Description"></textarea>
+    <div class="form-row two-col">
+      <div class="field">
+        <label>Priority</label>
+        <select id="edit-priority" class="input-select">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="edit-status" class="input-select">
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="edit-save-btn"   class="btn-primary">Save</button>
+      <button id="edit-cancel-btn" class="btn-ghost">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – TaskFlow</title>
+  <link rel="stylesheet" href="/static/css/auth.css" />
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="brand">
+        <span class="brand-icon">✓</span>
+        <h1>TaskFlow</h1>
+      </div>
+      <h2>Welcome back</h2>
+      <p class="subtitle">Sign in to manage your tasks</p>
+
+      <div id="error-msg" class="error-banner hidden"></div>
+
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" type="text" placeholder="your_username" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+
+      <button id="login-btn" class="btn-primary">Sign In</button>
+
+      <p class="switch-link">Don't have an account? <a href="/register">Register</a></p>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById("login-btn");
+    const err = document.getElementById("error-msg");
+
+    async function doLogin() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      if (!username || !password) { showErr("Please fill in all fields."); return; }
+
+      btn.disabled = true;
+      btn.textContent = "Signing in…";
+
+      const res  = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        window.location.href = "/dashboard";
+      } else {
+        showErr(data.error || "Login failed.");
+        btn.disabled = false;
+        btn.textContent = "Sign In";
+      }
+    }
+
+    function showErr(msg) {
+      err.textContent = msg;
+      err.classList.remove("hidden");
+    }
+
+    btn.addEventListener("click", doLogin);
+    document.addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+  </script>
+</body>
+</html>

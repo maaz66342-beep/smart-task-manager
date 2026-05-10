@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register – TaskFlow</title>
+  <link rel="stylesheet" href="/static/css/auth.css" />
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="brand">
+        <span class="brand-icon">✓</span>
+        <h1>TaskFlow</h1>
+      </div>
+      <h2>Create account</h2>
+      <p class="subtitle">Start managing your tasks today</p>
+
+      <div id="error-msg"   class="error-banner  hidden"></div>
+      <div id="success-msg" class="success-banner hidden"></div>
+
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" type="text"  placeholder="your_username" />
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Min. 8 characters" />
+      </div>
+
+      <button id="reg-btn" class="btn-primary">Create Account</button>
+
+      <p class="switch-link">Already have an account? <a href="/login">Sign in</a></p>
+    </div>
+  </div>
+
+  <script>
+    const btn  = document.getElementById("reg-btn");
+    const err  = document.getElementById("error-msg");
+    const succ = document.getElementById("success-msg");
+
+    btn.addEventListener("click", async () => {
+      const username = document.getElementById("username").value.trim();
+      const email    = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      err.classList.add("hidden");
+      succ.classList.add("hidden");
+
+      if (!username || !email || !password) { showErr("All fields are required."); return; }
+      if (password.length < 6) { showErr("Password must be at least 6 characters."); return; }
+
+      btn.disabled = true;
+      btn.textContent = "Creating…";
+
+      const res  = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        succ.textContent = "Account created! Redirecting to login…";
+        succ.classList.remove("hidden");
+        setTimeout(() => window.location.href = "/login", 1500);
+      } else {
+        showErr(data.error || "Registration failed.");
+        btn.disabled = false;
+        btn.textContent = "Create Account";
+      }
+    });
+
+    function showErr(msg) {
+      err.textContent = msg;
+      err.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
